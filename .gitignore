@@ -1,0 +1,25 @@
+# Local device configuration and private print data
+config.json
+*.local.json
+output/
+jobs/
+*.log
+.env
+.env.*
+!.env.example
+
+# Python / build / editor
+.venv/
+venv/
+vendor/
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.coverage
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

@@ -1,0 +1,4 @@
+include LICENSE README.md THIRD_PARTY_NOTICES.md config.example.json
+recursive-include licenses *.txt
+recursive-include tests *.py
+recursive-include docs *.png

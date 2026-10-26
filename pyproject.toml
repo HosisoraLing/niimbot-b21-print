@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "niimbot-b21-print"
+version = "0.1.0"
+description = "Local BLE asset-label printing for tested NIIMBOT B21-C2B printers"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "AGPL-3.0-only"
+license-files = ["LICENSE", "licenses/*.txt", "THIRD_PARTY_NOTICES.md"]
+authors = [{name = "HosisoraLing"}]
+dependencies = ["Pillow>=10,<13", "bleak>=1,<4"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Operating System :: Microsoft :: Windows",
+]
+
+[project.urls]
+Source = "https://github.com/HosisoraLing/niimbot-b21-print"
+Issues = "https://github.com/HosisoraLing/niimbot-b21-print/issues"
+
+[project.scripts]
+b21-print = "b21_print.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

@@ -125,6 +125,7 @@ class FakeClient:
 
 class Rig:
     def __init__(self, **options):
+        self.per_client = options.pop("per_client", [])
         self.options = options
         self.scanner = FakeScanner()
         self.clients, self.connections, self.delays = [], [], []
@@ -134,7 +135,10 @@ class Rig:
         await asyncio.sleep(0)  # Yield for cancellation/timeouts; never actually delay.
 
     def client(self, device, timeout):
-        client = FakeClient(device, timeout, **self.options)
+        options = dict(self.options)
+        if len(self.clients) < len(self.per_client):
+            options.update(self.per_client[len(self.clients)])
+        client = FakeClient(device, timeout, **options)
         self.clients.append(client)
         return client
 
@@ -247,6 +251,21 @@ class PrinterTests(unittest.IsolatedAsyncioTestCase):
                 self.assertTrue(self.job["cancel_sent"])
                 self.assertFalse(self.job["confirmed_numbers"])
                 self.assertTrue(rig.clients[0].closed and rig.clients[0].stopped)
+
+    async def test_failure_on_second_label_preserves_only_first_confirmation(self):
+        rig = Rig(per_client=[{}, {"reject_on": 0x01}])
+        with self.assertRaises(RuntimeError):
+            await self.batch(rig)
+        self.assertEqual(len(rig.clients), 2)
+        self.assertEqual(self.job["confirmed_numbers"], [1])
+        self.assertEqual(self.job["current_number"], 2)
+        self.assertNotEqual(self.job["state"], "completed")
+        self.assertTrue(all(client.closed for client in rig.clients))
+        first_commands = [c for c, _ in rig.clients[0].writes]
+        second_commands = [c for c, _ in rig.clients[1].writes]
+        self.assertNotIn(0xDA, first_commands)
+        self.assertEqual(second_commands.count(0x01), 1)
+        self.assertEqual(second_commands.count(0xDA), 1)
 
     async def test_rejected_density_stops_without_start_or_cancellation(self):
         rig = Rig(reject_on=0x21)

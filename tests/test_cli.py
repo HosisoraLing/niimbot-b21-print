@@ -153,6 +153,17 @@ class CliTests(unittest.TestCase):
             self.assertIn(cli.SOURCE, output)
             self.assertEqual(self.invoke()[0], 0)
 
+    def test_windows_legacy_redirected_stream_is_reconfigured_before_notice(self):
+        raw = io.BytesIO()
+        stream = io.TextIOWrapper(raw, encoding="cp1252")
+        try:
+            with patch.object(cli.os, "name", "nt"), patch.object(cli.sys, "stdout", stream), forbid_hardware_imports():
+                self.assertEqual(cli.main(["--license"]), 0)
+            stream.flush()
+            self.assertIn("精臣 B21", raw.getvalue().decode("utf-8"))
+        finally:
+            stream.detach()
+
     def test_scan_and_inspect_are_mocked_not_bluetooth(self):
         with self.fake_printer() as fake:
             self.assertEqual(self.invoke("scan")[0], 0)

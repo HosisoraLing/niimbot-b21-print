@@ -8,6 +8,7 @@ from datetime import datetime
 import json
 import os
 from pathlib import Path
+import sys
 import uuid
 from . import __version__
 from .config import Config,load_config
@@ -47,7 +48,17 @@ def save_json(path,data):
     os.replace(temp,path)
 
 
+def configure_console():
+    # Windows redirected stdout otherwise defaults to e.g. cp1252 and crashes on
+    # Chinese text. Configure at CLI entry, not import; don't mutate test streams.
+    if os.name == "nt":
+        for stream in (sys.stdout,sys.stderr):
+            if hasattr(stream,"reconfigure"):
+                stream.reconfigure(encoding="utf-8",errors="backslashreplace")
+
+
 def main(argv=None):
+    configure_console()
     args = parser().parse_args(argv)
     if args.license:
         print(NOTICE)
